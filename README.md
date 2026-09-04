@@ -23,7 +23,7 @@ printer.cfg              includes, MCUs, kinematics, idle timeout, SAVE_CONFIG
 │   ├── homing.cfg       safe_z_home and quad_gantry_level
 │   ├── fans.cfg         hotend, part cooling, driver, bay and bed fans
 │   ├── sensors.cfg      chamber and MCU thermistors, filament switches
-│   ├── display.cfg      mini12864
+│   ├── display.cfg      [display_status] only - the screen is not Klipper's
 │   └── input_shaper.cfg accelerometer, resonance tester, shaper, Shake&Tune
 ├── leds/                the whole LED subsystem, ~400 lines
 │   ├── hardware.cfg     the two neopixel chains
@@ -89,8 +89,10 @@ commands ever behave oddly, that file is the reason.
 | Component | Details |
 |---|---|
 | Printer | Voron 2.4, 300 × 300 (usable Z 270) |
-| Mainboard | Fysetc Spider, STM32F446, 12 MHz crystal, USB |
+| Mainboard | Fysetc Spider 2.2, STM32F446, 12 MHz crystal, over plain USB |
 | | `serial: /dev/serial/by-id/usb-Klipper_stm32f446xx_1E0027000F51303530323539-if00` |
+| CAN bridge | BTT U2C V2.1, candleLight firmware, `can0` at 1 Mbit/s |
+| | USB id `1d50:606f`. **Both CAN devices below hang off this, not off the Spider** |
 | Toolhead | EBB36 over CAN — `canbus_uuid: a701c91bc20c` (WWBMG, dual sensor) |
 | | Spare, currently unused: `95b4bab5914c` (EBB36 WWG2) |
 | Probe | Cartographer V4 over CAN — `canbus_uuid: 623c5a948da6` |
@@ -99,16 +101,25 @@ commands ever behave oddly, that file is the reason.
 | Extruder | 50:10, `rotation_distance: 22.6789511` |
 | Bed | Keenovo, `Generic 3950` on `PB0`, SSR on `PB4`, `max_power: 0.6` |
 | Chamber | `Generic 3950` thermistor on `PC0` |
-| Display | mini12864 (uc1701) |
+| Display | BTT PITFT43 V2.0 on the Pi (`/dev/fb0`), driven by KlipperScreen |
 | Case LEDs | Neopixel GRB ×36 on `PD3` |
 | Toolhead LEDs | Neopixel GRBW ×3 on `EBBCan:PD3` (1 = logo, 2-3 = nozzle) |
-| Bed fans | `fan_generic BedFans` on `PC8` |
+| Bed fans | `fan_generic bed_fans` on `PC8` |
 | Filament sensors | `extruder_entry` on `EBBCan:PB6` (before the gears), `extruder_exit` on `EBBCan:PB5` (after them) |
 | Host | Raspberry Pi 4 (`VoronPrinter`), user `pi`, Debian 11 bullseye arm64 |
 
 When rebuilding the Spider firmware: in `menuconfig` enable *extra low-level
 configuration setup*, select the 12 MHz crystal and the USB interface. Flash to
 `0x08000000`.
+
+The U2C is flashed separately with candleLight firmware; the source is kept in
+`~/candleLight_fw` on the host. Klipper has no config section for it - it just
+provides the `can0` interface that the EBB36 and the Cartographer talk over.
+
+There is deliberately **no `[display]` section**. The PITFT43 is a Raspberry Pi
+framebuffer, not a Klipper display, so `hardware/display.cfg` declares only
+`[display_status]` - which is what provides `M117` and `SET_DISPLAY_TEXT`. See
+the comment in that file before removing it.
 
 ## Install order
 
