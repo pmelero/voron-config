@@ -118,11 +118,13 @@ run or for reporting a bug upstream.
 
 How many are kept is `number_of_results_to_keep` in the `[shaketune]` section of
 `hardware/input_shaper.cfg`. It counts **PNG files per subfolder, not
-calibration runs** — an input shaper run writes two graphs (X and Y), so a value
-of 50 keeps 25 of those, while `belts` writes one graph per run and so keeps 50.
-Deleting a graph also deletes its matching `.stdata`. There is no "unlimited"
-value: `0` wipes the folder rather than keeping everything, so "keep them all"
-means choosing a number you will never reach.
+calibration runs** — an input shaper run writes two graphs (X and Y), so the
+current value of 200 keeps 100 of those, while `belts` writes one graph per run
+and so keeps 200. Deleting a graph also deletes its matching `.stdata`. There is
+no "unlimited" value: `0` wipes the folder rather than keeping everything, so
+"keep them all" means choosing a number you will never reach. At ~670 KB per
+graph, 200 per subfolder is roughly 134 MB of SD card per subfolder at full
+saturation.
 
 Note that retention does not bound the repository. Every graph that is ever
 committed stays in git history regardless; `number_of_results_to_keep` only
@@ -165,6 +167,10 @@ Configured in `~/klipper-backup/.env`, which holds the GitHub token and is
   never under `printer_data/config/`. The backup script preserves it explicitly
   (`find ... ! -name 'README.md'`) and only recreates it when missing, so edit it
   there — a copy placed next to `printer.cfg` would not be this file.
+  Because it sits outside `printer_data/config/`, filewatch does not see it:
+  editing it triggers no backup of its own. It only reaches GitHub on the next
+  backup that something else triggers, or when
+  `bash ~/klipper-backup/script.sh` is run by hand.
 
 Three triggers:
 
