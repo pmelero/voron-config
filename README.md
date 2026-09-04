@@ -93,15 +93,17 @@ commands ever behave oddly, that file is the reason.
 | | `serial: /dev/serial/by-id/usb-Klipper_stm32f446xx_1E0027000F51303530323539-if00` |
 | CAN bridge | BTT U2C V2.1, candleLight firmware, `can0` at 1 Mbit/s |
 | | USB id `1d50:606f`. **Both CAN devices below hang off this, not off the Spider** |
-| Toolhead | EBB36 over CAN — `canbus_uuid: a701c91bc20c` (WWBMG, dual sensor) |
+| Toolhead | A4T, Crossbow X carriage, CNC XOL mount |
+| | EBB36 over CAN — `canbus_uuid: a701c91bc20c` (dual filament sensor) |
 | | Spare, currently unused: `95b4bab5914c` (EBB36 WWG2) |
+| Hotend | Dragon Ace, **PT1000** via the EBB36's MAX31865 (2-wire) on `EBBCan:PA4`, SPI1 |
+| Extruder | WWBMG Dual, 50:10, `rotation_distance: 22.6789511` |
 | Probe | Cartographer V4 over CAN — `canbus_uuid: 623c5a948da6` |
 | | Firmware `CARTOGRAPHER v4 6.2.0`, plugin `1.9.0` |
-| Hotend | PT100 via MAX31865 (2-wire, 430 Ω ref) on `EBBCan:PA4`, SPI1 |
-| Extruder | 50:10, `rotation_distance: 22.6789511` |
 | Bed | Keenovo, `Generic 3950` on `PB0`, SSR on `PB4`, `max_power: 0.6` |
 | Chamber | `Generic 3950` thermistor on `PC0` |
 | Display | BTT PITFT43 V2.0 on the Pi (`/dev/fb0`), driven by KlipperScreen |
+| Camera | Logitech C920 (`046d:082d`), focus locked in `crowsnest.conf` |
 | Case LEDs | Neopixel GRB ×36 on `PD3` |
 | Toolhead LEDs | Neopixel GRBW ×3 on `EBBCan:PD3` (1 = logo, 2-3 = nozzle) |
 | Bed fans | `fan_generic bed_fans` on `PC8` |
@@ -115,6 +117,11 @@ configuration setup*, select the 12 MHz crystal and the USB interface. Flash to
 The U2C is flashed separately with candleLight firmware; the source is kept in
 `~/candleLight_fw` on the host. Klipper has no config section for it - it just
 provides the `can0` interface that the EBB36 and the Cartographer talk over.
+
+The hotend PT1000 is declared as `rtd_nominal_r: 1000` / `rtd_reference_r: 4300`.
+Klipper only ever uses those two as a ratio, so 430/100 - what this config said
+before - produced identical readings. The current values are simply the honest
+ones for the sensor that is actually fitted; do not "fix" them back.
 
 There is deliberately **no `[display]` section**. The PITFT43 is a Raspberry Pi
 framebuffer, not a Klipper display, so `hardware/display.cfg` declares only
