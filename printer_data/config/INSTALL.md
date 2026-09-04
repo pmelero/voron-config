@@ -44,7 +44,16 @@ Y estos a mano (o desde el `update_manager` de `moonraker.conf`, que ya los trae
 7. [Katapult](https://github.com/Arksine/katapult) — bootloader CAN
 8. [mobileraker_companion](https://github.com/Clon1998/mobileraker_companion)
 9. [klipper-backup](https://github.com/Staubgeborener/klipper-backup) — este backup
-10. Spoolman en Docker, puerto 7912
+10. [Spoolman](https://github.com/Donkie/Spoolman) **standalone** en 
+    (no Docker): , servicio systemd ,
+    escucha en el 7912. El instalador usa , que se descarga su propio Python
+    3.10+ porque el 3.9 de bullseye no cumple el .
+    Los datos de bobinas viven en , apuntados con
+     en . Ese  esta en
+     del update_manager: si se pierde, Spoolman arranca
+    con una base de datos vacia.
+    Ojo: el instalador anade  a  sin
+    salto de linea previo y lo pega a la entrada anterior. Hay que revisarlo.
 
 ## Restaurar
 
