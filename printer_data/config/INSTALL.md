@@ -1,66 +1,68 @@
-# Voron 2.4 300 — Restauración desde cero
+# Voron 2.4 300 — Restoring from scratch
 
-Este repo es un backup **solo de configuración**. No incluye Klipper, Moonraker ni los
-plugins: hay que instalarlos antes de restaurar, o Klipper no arrancará.
+This repo is a **configuration-only** backup. It does not contain Klipper,
+Moonraker or any of the plugins: install those first, or Klipper will not start.
 
 ## Hardware
 
-| Componente | Detalle |
+| Component | Details |
 |---|---|
-| Impresora | Voron 2.4, 300 × 300 (Z útil 270) |
-| Placa base | Fysetc Spider, STM32F446, cristal 12 MHz, USB |
+| Printer | Voron 2.4, 300 × 300 (usable Z 270) |
+| Mainboard | Fysetc Spider, STM32F446, 12 MHz crystal, USB |
 | | `serial: /dev/serial/by-id/usb-Klipper_stm32f446xx_1E0027000F51303530323539-if00` |
-| Toolhead | EBB36 sobre CAN — `canbus_uuid: a701c91bc20c` (WWBMG, doble sensor) |
-| | Repuesto en desuso: `95b4bab5914c` (EBB36 WWG2) |
-| Sonda | Cartographer V4 sobre CAN — `canbus_uuid: 623c5a948da6` |
+| Toolhead | EBB36 over CAN — `canbus_uuid: a701c91bc20c` (WWBMG, dual sensor) |
+| | Spare, currently unused: `95b4bab5914c` (EBB36 WWG2) |
+| Probe | Cartographer V4 over CAN — `canbus_uuid: 623c5a948da6` |
 | | Firmware `CARTOGRAPHER v4 6.2.0`, plugin `1.9.0` |
-| Hotend | Termistor PT100 MAX31865 (2 hilos, 430 Ω ref) en `EBBCan:PA4`, SPI1 |
-| Extrusor | 50:10, `rotation_distance: 22.6789511` |
-| Cama | Keenovo, `Generic 3950` en `PB0`, SSR en `PB4`, `max_power: 0.6` |
-| Cámara térmica | Termistor `Generic 3950` en `PC0` |
-| Pantalla | mini12864 (uc1701) |
-| LEDs cámara | Neopixel GRB ×36 en `PD3` |
-| LEDs toolhead | Neopixel GRBW ×3 en `EBBCan:PD3` (1 = logo, 2-3 = boquilla) |
-| Bed fans | `fan_generic BedFans` en `PC8` |
-| Sensores filamento | `switch_sensor_1` en `EBBCan:PB6`, `switch_sensor_2` en `EBBCan:PB5` |
-| Host | Raspberry Pi (`VoronPrinter`), usuario `pi` |
+| Hotend | PT100 via MAX31865 (2-wire, 430 Ω ref) on `EBBCan:PA4`, SPI1 |
+| Extruder | 50:10, `rotation_distance: 22.6789511` |
+| Bed | Keenovo, `Generic 3950` on `PB0`, SSR on `PB4`, `max_power: 0.6` |
+| Chamber | `Generic 3950` thermistor on `PC0` |
+| Display | mini12864 (uc1701) |
+| Case LEDs | Neopixel GRB ×36 on `PD3` |
+| Toolhead LEDs | Neopixel GRBW ×3 on `EBBCan:PD3` (1 = logo, 2-3 = nozzle) |
+| Bed fans | `fan_generic BedFans` on `PC8` |
+| Filament sensors | `switch_sensor_1` on `EBBCan:PB6`, `switch_sensor_2` on `EBBCan:PB5` |
+| Host | Raspberry Pi 4 (`VoronPrinter`), user `pi`, Debian 11 bullseye arm64 |
 
-Al recompilar el firmware del Spider: `menuconfig` → activar *extra low-level
-configuration setup*, cristal de 12 MHz, interfaz USB. Se flashea a `0x08000000`.
+When rebuilding the Spider firmware: in `menuconfig` enable *extra low-level
+configuration setup*, select the 12 MHz crystal and the USB interface. Flash to
+`0x08000000`.
 
-## Orden de instalación
+## Install order
 
-Todo lo de la primera lista se instala con [KIAUH](https://github.com/dw-0/kiauh):
+Everything in the first list comes from [KIAUH](https://github.com/dw-0/kiauh):
 
 1. Klipper, Moonraker, Mainsail, KlipperScreen, Crowsnest, Sonar
 
-Y estos a mano (o desde el `update_manager` de `moonraker.conf`, que ya los trae):
+The rest are installed manually (or through the `update_manager` entries already
+present in `moonraker.conf`):
 
-2. [moonraker-timelapse](https://github.com/mainsail-crew/moonraker-timelapse) — **imprescindible**, crea `timelapse.cfg`
-3. [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) (rama `dev`) — **imprescindible**, crea el symlink `KAMP/`
-4. [klipper-led_effect](https://github.com/julianschill/klipper-led_effect) — sin él no carga `config/led_effects.cfg`
-5. [Klippain Shake&Tune](https://github.com/Frix-x/klippain-shaketune) — sección `[shaketune]`
-6. Plugin Cartographer: `cartographer3d-plugin` en `~/klippy-env`
-7. [Katapult](https://github.com/Arksine/katapult) — bootloader CAN
+2. [moonraker-timelapse](https://github.com/mainsail-crew/moonraker-timelapse) — **required**, creates `timelapse.cfg`
+3. [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) (`dev` branch) — **required**, creates the `KAMP/` symlink
+4. [klipper-led_effect](https://github.com/julianschill/klipper-led_effect) — without it `leds/effects.cfg` will not load
+5. [Klippain Shake&Tune](https://github.com/Frix-x/klippain-shaketune) — provides the `[shaketune]` section
+6. Cartographer plugin: `cartographer3d-plugin` into `~/klippy-env`
+7. [Katapult](https://github.com/Arksine/katapult) — CAN bootloader
 8. [mobileraker_companion](https://github.com/Clon1998/mobileraker_companion)
-9. [klipper-backup](https://github.com/Staubgeborener/klipper-backup) — este backup
-10. [Spoolman](https://github.com/Donkie/Spoolman) **standalone** (no Docker) en
-    `~/Spoolman`, servicio systemd `Spoolman.service`, escuchando en el 7912
+9. [klipper-backup](https://github.com/Staubgeborener/klipper-backup) — this backup
+10. [Spoolman](https://github.com/Donkie/Spoolman) **standalone** (not Docker) in
+    `~/Spoolman`, systemd service `Spoolman.service`, listening on 7912
 
-Sobre Spoolman, que tiene un par de trampas:
+Spoolman has a few gotchas worth knowing about:
 
-- Su instalador usa `uv`, que **se descarga su propio Python 3.10+**. El 3.9 de
-  bullseye no cumple el `requires-python` de Spoolman, pero no hace falta ni
-  actualizar Debian ni compilar nada: `uv` lo resuelve solo en aarch64.
-- Los datos de bobinas viven en `~/.local/share/spoolman` (la ruta por defecto),
-  junto con los backups automáticos nocturnos y los logs. El `.env` solo lleva
-  `SPOOLMAN_HOST` y `SPOOLMAN_PORT`: se dejó a propósito sin `SPOOLMAN_DIR_DATA`
-  para que perder el `.env` no pueda arrancar Spoolman contra una base vacía.
-- El instalador añade `Spoolman` a `~/printer_data/moonraker.asvc` sin salto de
-  línea previo, y lo pega a la entrada anterior dejándola inválida. Revisar ese
-  archivo después de instalar.
+- Its installer uses `uv`, which **downloads its own Python 3.10+**. The 3.9 that
+  ships with bullseye does not satisfy Spoolman's `requires-python`, but there is
+  no need to upgrade Debian or compile anything: `uv` handles it on aarch64.
+- Spool data lives in `~/.local/share/spoolman` (the default path), together with
+  the nightly automatic backups and the logs. The `.env` only carries
+  `SPOOLMAN_HOST` and `SPOOLMAN_PORT` — `SPOOLMAN_DIR_DATA` was deliberately left
+  out so that losing `.env` cannot start Spoolman against an empty database.
+- The installer appends `Spoolman` to `~/printer_data/moonraker.asvc` without a
+  preceding newline, gluing it onto the previous entry and invalidating both.
+  Check that file after installing.
 
-## Restaurar
+## Restoring
 
 ```bash
 git clone https://github.com/pmelero/voron-config.git /tmp/restore
@@ -68,49 +70,50 @@ cp -r /tmp/restore/printer_data/config/* ~/printer_data/config/
 sudo systemctl restart klipper
 ```
 
-Después, en Mainsail, revisa el bloque `SAVE_CONFIG` al final de `printer.cfg`:
-trae los PID de cama y hotend, el `bed_mesh` y los modelos `scan`/`touch` de
-Cartographer. Si el hardware es el mismo, sirven tal cual; si cambiaste boquilla o
-sonda, recalíbralos.
+Afterwards, check the `SAVE_CONFIG` block at the end of `printer.cfg`: it carries
+the bed and hotend PID values, the bed mesh, and the Cartographer scan and touch
+models. If the hardware is unchanged they can be used as-is; if you swapped the
+nozzle or the probe, recalibrate.
 
-## Lo que este backup NO contiene
+## What this backup does NOT contain
 
-`klipper-backup` **ignora los enlaces simbólicos** a propósito (dice
-`Skipping symbolic link` al ejecutarse). Estos dos existen en la carpeta de config
-pero no están en el repo, y los recrean sus instaladores:
+`klipper-backup` **skips symbolic links** by design (it prints
+`Skipping symbolic link` as it runs). These two live in the config folder but are
+not in the repo, and their own installers recreate them:
 
 - `KAMP` → `~/Klipper-Adaptive-Meshing-Purging/Configuration`
 - `timelapse.cfg` → `~/moonraker-timelapse/klipper_macro/timelapse.cfg`
 
-Por eso los `[include]` que apuntan a ellos usan comodín (`timelapse*.cfg`,
-`Line_Purge*.cfg`): Klipper trata un include con comodín sin coincidencias como
-vacío en vez de como error, así que la impresora **arranca igualmente** aunque los
-plugins todavía no estén instalados, y puedes repararla desde la interfaz.
+That is why the `[include]` lines pointing at them use wildcards
+(`timelapse*.cfg`, `Line_Purge*.cfg`). Klipper treats an include glob that
+matches nothing as empty rather than as an error, so the printer **still boots**
+when those plugins are not installed yet and you can repair it from the web UI.
 
-Tampoco se respaldan, por estar en `exclude` del `.env`:
-`ShakeTune_results/`, `*.db`, `*.stdata`, `*.png`, `*.csv`, `*.zip`, `*.bak`,
-`*.bkp`, y las copias automáticas `printer-<fecha>.cfg`.
+Also excluded, via the `exclude` array in the `.env`: `ShakeTune_results/`,
+`*.db`, `*.stdata`, `*.png`, `*.csv`, `*.zip`, `*.bak`, `*.bkp`, and the
+automatic `printer-<timestamp>.cfg` copies.
 
-## Cómo funciona el backup
+## How the backup works
 
-Definido en `~/klipper-backup/.env` (contiene el token de GitHub, **nunca se sube**).
+Configured in `~/klipper-backup/.env`, which holds the GitHub token and is
+**never** pushed.
 
-- `backupPaths=("printer_data/config/*")` — solo se respalda esa carpeta
-- El `.gitignore` del repo **se regenera** en cada ejecución desde el array `exclude`
-  del `.env`. Editarlo a mano no sirve de nada: hay que tocar el `.env`.
-- El repo de trabajo es `~/config_backup`, y su árbol se vacía después de cada push.
-  La fuente de la verdad es siempre `~/printer_data/config/`.
+- `backupPaths=("printer_data/config/*")` — only that folder is backed up.
+- The repo's `.gitignore` is **regenerated on every run** from the `exclude`
+  array in the `.env`. Editing it by hand achieves nothing; edit the `.env`.
+- The working repo is `~/config_backup`, and its tree is emptied after each push.
+  The source of truth is always `~/printer_data/config/`.
 
-Tres disparadores:
+Three triggers:
 
-| Disparador | Qué es |
+| Trigger | What it does |
 |---|---|
-| `klipper-backup-filewatch.service` | `inotifywait` sobre la config; respalda en cada cambio (salvo imprimiendo) |
-| `klipper-backup-on-boot.service` | Un backup al arrancar |
-| cron `0 */4 * * *` | Cada 4 horas |
+| `klipper-backup-filewatch.service` | `inotifywait` on the config; backs up on every change, unless printing |
+| `klipper-backup-on-boot.service` | One backup at boot |
+| cron `0 */4 * * *` | Every 4 hours |
 
-Manual: `UPDATE_GIT` desde la consola de Klipper, o `bash ~/klipper-backup/script.sh`.
+Manually: `UPDATE_GIT` from the Klipper console, or `bash ~/klipper-backup/script.sh`.
 
-**El flujo es unidireccional en cuanto a contenido**: los archivos van de
-`~/printer_data/config/` a GitHub por `rsync`, nunca al revés. Editar el repo en
-GitHub o en un clon no cambia nada en la impresora.
+**Content flows one way only**: files go from `~/printer_data/config/` to GitHub
+via `rsync`, never the other way. Editing the repo on GitHub or in a clone
+changes nothing on the printer.
