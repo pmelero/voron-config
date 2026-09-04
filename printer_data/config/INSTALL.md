@@ -44,16 +44,21 @@ Y estos a mano (o desde el `update_manager` de `moonraker.conf`, que ya los trae
 7. [Katapult](https://github.com/Arksine/katapult) — bootloader CAN
 8. [mobileraker_companion](https://github.com/Clon1998/mobileraker_companion)
 9. [klipper-backup](https://github.com/Staubgeborener/klipper-backup) — este backup
-10. [Spoolman](https://github.com/Donkie/Spoolman) **standalone** en 
-    (no Docker): , servicio systemd ,
-    escucha en el 7912. El instalador usa , que se descarga su propio Python
-    3.10+ porque el 3.9 de bullseye no cumple el .
-    Los datos de bobinas viven en , apuntados con
-     en . Ese  esta en
-     del update_manager: si se pierde, Spoolman arranca
-    con una base de datos vacia.
-    Ojo: el instalador anade  a  sin
-    salto de linea previo y lo pega a la entrada anterior. Hay que revisarlo.
+10. [Spoolman](https://github.com/Donkie/Spoolman) **standalone** (no Docker) en
+    `~/Spoolman`, servicio systemd `Spoolman.service`, escuchando en el 7912
+
+Sobre Spoolman, que tiene un par de trampas:
+
+- Su instalador usa `uv`, que **se descarga su propio Python 3.10+**. El 3.9 de
+  bullseye no cumple el `requires-python` de Spoolman, pero no hace falta ni
+  actualizar Debian ni compilar nada: `uv` lo resuelve solo en aarch64.
+- Los datos de bobinas viven en `~/spoolman/data` (heredado de la instalación
+  anterior en Docker), apuntados con `SPOOLMAN_DIR_DATA` en `~/Spoolman/.env`.
+  Ese `.env` está en `persistent_files` del `update_manager`: si se pierde,
+  Spoolman arranca con una base de datos vacía.
+- El instalador añade `Spoolman` a `~/printer_data/moonraker.asvc` sin salto de
+  línea previo, y lo pega a la entrada anterior dejándola inválida. Revisar ese
+  archivo después de instalar.
 
 ## Restaurar
 
