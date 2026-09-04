@@ -9,15 +9,80 @@ or any of the plugins: install those first, or Klipper will not start. See
 
 ## Layout
 
-Everything lives under `printer_data/config/`, mirroring the printer:
+Everything lives under `printer_data/config/`, mirroring the printer. The split
+is by *question answered*: `hardware/` says what the machine is, `macros/` says
+what it does, `leds/` owns one subsystem end to end.
 
-| Path | Contents |
-|---|---|
-| `printer.cfg` | Header, includes, MCU definitions, kinematics, idle timeout |
-| `hardware/` | What the machine is made of, and on which pins |
-| `leds/` | The two neopixel chains, their effects, and the `STATUS_*` macros |
-| `macros/` | What the machine does |
-| `*.conf` | Moonraker and the third-party services |
+```
+printer.cfg              includes, MCUs, kinematics, idle timeout, SAVE_CONFIG
+├── hardware/            what the machine is made of, and on which pins
+│   ├── steppers.cfg     XY + the four Z motors, and their TMC2209 drivers
+│   ├── extruder.cfg     extruder motor, MAX31865/PT100 hotend, pressure advance
+│   ├── bed.cfg          heater_bed and its thermistor
+│   ├── probe.cfg        Cartographer MCU, the probe itself, and [bed_mesh]
+│   ├── homing.cfg       safe_z_home and quad_gantry_level
+│   ├── fans.cfg         hotend, part cooling, driver, bay and bed fans
+│   ├── sensors.cfg      chamber and MCU thermistors, filament switches
+│   ├── display.cfg      mini12864
+│   └── input_shaper.cfg accelerometer, resonance tester, shaper, Shake&Tune
+├── leds/                the whole LED subsystem, ~400 lines
+│   ├── hardware.cfg     the two neopixel chains
+│   ├── effects.cfg      27 [led_effect] definitions
+│   └── macros.cfg       LED_* manual control and STATUS_* print states
+├── macros/              what the machine does
+│   ├── variables.cfg    _MACHINE_VARS - shared geometry, read below
+│   ├── print_control.cfg PAUSE / RESUME / CANCEL_PRINT / HOME / parking
+│   ├── print_start_end.cfg PRINT_START and PRINT_END
+│   ├── clean_nozzle.cfg _CLEAN_NOZZLE engine + the CLEAN_* wrappers
+│   ├── filament.cfg     Spoolman, load/unload, M600, sensor enable
+│   ├── bedfans.cfg      bed fan logic and the M190/M140 overrides
+│   └── test_speed.cfg   TEST_SPEED
+├── KAMP_Settings.cfg    third-party, stays at the root (see Install order)
+├── update_git.cfg       UPDATE_GIT, the manual backup trigger
+└── *.conf               Moonraker, crowsnest, mobileraker
+```
+
+### Conventions
+
+**Naming.** Klipper object names are lowercase with underscores
+(`bed_fans`, `spider_mcu`, `sb_leds`). Macros are UPPERCASE. A leading
+underscore means internal — Mainsail hides those, and they are not meant to be
+called by hand: `_MACHINE_VARS`, `_CLEAN_NOZZLE`, `_TOOLHEAD_PARK_PAUSE_CANCEL`,
+`_BEDFANVARS`. Every macro carries a `description:`, which is what Mainsail
+shows on the button.
+
+**Shared geometry.** Coordinates that more than one macro has to agree on live
+in `_MACHINE_VARS` ([macros/variables.cfg](printer_data/config/macros/variables.cfg)),
+never in whichever macro happened to need them first:
+
+```jinja
+{% set mv = printer["gcode_macro _MACHINE_VARS"] %}
+G0 X{mv.park_x} Y{mv.park_y} F6000
+```
+
+`PRINT_START`, `PRINT_END`, `_TOOLHEAD_PARK_PAUSE_CANCEL` and `_CLEAN_NOZZLE`
+all read from it. Note that `park_*` and `bucket_*` hold the same coordinates
+today but are deliberately separate entries: parking somewhere else should not
+move the purge bucket.
+
+**Engine plus wrappers.** `_CLEAN_NOZZLE` takes every parameter (wipe count,
+purge length, load, retract, dwell, park) and does the work. The five public
+`CLEAN_*` macros are one-line wrappers that call it with a preset. Add a new
+cleaning behaviour by adding a wrapper, not by editing the engine.
+
+**The two filament sensors do different things, on purpose.**
+`extruder_entry` sits before the extruder gears, so when it trips the tail of
+the filament is still gripped: it runs `M600`, which pauses and then unloads
+that stub cleanly. `extruder_exit` sits after the gears, so by the time it
+trips there is nothing left for them to grip and an unload would spin on air —
+it only pauses, and you load new filament by hand. Both are disabled together
+by `FILAMENT_SENSORS_ENABLE`, which `PAUSE` calls before anything else, so the
+retraction inside `M600` cannot trip `extruder_exit` and cascade.
+
+**Overrides.** [macros/bedfans.cfg](printer_data/config/macros/bedfans.cfg)
+renames and replaces `M190`, `M140`, `SET_HEATER_TEMPERATURE` and
+`TURN_OFF_HEATERS` so bed heating also drives the bed fans. If bed temperature
+commands ever behave oddly, that file is the reason.
 
 ## Hardware
 
@@ -38,7 +103,7 @@ Everything lives under `printer_data/config/`, mirroring the printer:
 | Case LEDs | Neopixel GRB ×36 on `PD3` |
 | Toolhead LEDs | Neopixel GRBW ×3 on `EBBCan:PD3` (1 = logo, 2-3 = nozzle) |
 | Bed fans | `fan_generic BedFans` on `PC8` |
-| Filament sensors | `switch_sensor_1` on `EBBCan:PB6`, `switch_sensor_2` on `EBBCan:PB5` |
+| Filament sensors | `extruder_entry` on `EBBCan:PB6` (before the gears), `extruder_exit` on `EBBCan:PB5` (after them) |
 | Host | Raspberry Pi 4 (`VoronPrinter`), user `pi`, Debian 11 bullseye arm64 |
 
 When rebuilding the Spider firmware: in `menuconfig` enable *extra low-level
