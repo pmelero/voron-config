@@ -105,9 +105,28 @@ That is why the `[include]` lines pointing at them use wildcards
 matches nothing as empty rather than as an error, so the printer **still boots**
 when those plugins are not installed yet and you can repair it from the web UI.
 
-Also excluded, via the `exclude` array in the `.env`: `ShakeTune_results/`,
-`*.db`, `*.stdata`, `*.png`, `*.csv`, `*.zip`, `*.bak`, `*.bkp`, and the
-automatic `printer-<timestamp>.cfg` copies.
+Also excluded, via the `exclude` array in the `.env`: `*.db`, `*.stdata`,
+`*.csv`, `*.zip`, `*.bak`, `*.bkp`, and the automatic `printer-<timestamp>.cfg`
+copies.
+
+### Shake&Tune results
+
+The `.png` graphs under `printer_data/config/ShakeTune_results/` **are** backed
+up. The `.stdata` raw captures sitting next to them are **not**: graphs average
+~670 KB, raw captures ~4 MB, and the raw ones are only useful for reprocessing a
+run or for reporting a bug upstream.
+
+How many are kept is `number_of_results_to_keep` in the `[shaketune]` section of
+`hardware/input_shaper.cfg`. It counts **PNG files per subfolder, not
+calibration runs** — an input shaper run writes two graphs (X and Y), so a value
+of 50 keeps 25 of those, while `belts` writes one graph per run and so keeps 50.
+Deleting a graph also deletes its matching `.stdata`. There is no "unlimited"
+value: `0` wipes the folder rather than keeping everything, so "keep them all"
+means choosing a number you will never reach.
+
+Note that retention does not bound the repository. Every graph that is ever
+committed stays in git history regardless; `number_of_results_to_keep` only
+controls how many remain visible in the current tree and on the SD card.
 
 ### Third-party configs: which are backed up and which are not
 
