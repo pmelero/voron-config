@@ -1,9 +1,14 @@
 .env
 secrets.conf
+*.db
 *.swp
+*.stdata
 *.tmp
 printer-[0-9]*_[0-9]*.cfg
+*.png
+sonar.conf
 *.bak
+KlipperScreen.conf
 *.bkp
 *.csv
 *.zip
@@ -11,3 +16,5 @@ ShakeTune_results
 *.db
 *.stdata
 *.png
+sonar.conf
+KlipperScreen.conf

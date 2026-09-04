@@ -93,6 +93,29 @@ Also excluded, via the `exclude` array in the `.env`: `ShakeTune_results/`,
 `*.db`, `*.stdata`, `*.png`, `*.csv`, `*.zip`, `*.bak`, `*.bkp`, and the
 automatic `printer-<timestamp>.cfg` copies.
 
+### Third-party configs: which are backed up and which are not
+
+Two plugin config files are deliberately excluded, because nothing in them is
+worth restoring:
+
+- `sonar.conf` — byte-for-byte the installer default (only comment wording
+  differs from `~/sonar/resources/sonar.conf`), for a service that is
+  `enable: false` anyway.
+- `KlipperScreen.conf` — 37 of its 38 lines are the auto-generated `#~#` block
+  and none are hand-written. KlipperScreen rewrites it every time something is
+  toggled on the touchscreen, which made it one of the noisiest files in the
+  history. Restoring it just means re-hiding a few macros from the UI.
+
+The other third-party configs **are** backed up, and should stay that way — they
+carry real settings that are not obvious to reconstruct:
+
+- `crowsnest.conf` — `v4l2ctl: focus_automatic_continuous=0,focus_absolute=75`
+  (locked focus; the default has this commented out) and `max_fps: 30` instead
+  of the default 15. Lose it and the webcam goes back to hunting focus mid-print.
+- `mobileraker.conf` — timezone, `snapshot_rotation: 180`, and the printer name.
+- `KAMP_Settings.cfg` — hand-edited (`probe_dock_enable: False`), and it carries
+  the `Line_Purge*.cfg` wildcard include.
+
 ## How the backup works
 
 Configured in `~/klipper-backup/.env`, which holds the GitHub token and is
