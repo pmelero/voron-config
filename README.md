@@ -84,6 +84,26 @@ renames and replaces `M190`, `M140`, `SET_HEATER_TEMPERATURE` and
 `TURN_OFF_HEATERS` so bed heating also drives the bed fans. If bed temperature
 commands ever behave oddly, that file is the reason.
 
+**Nothing carries over between prints.** `_RESET_PRINTER_TO_KLIPPER_CONFIG`
+([macros/print_control.cfg](printer_data/config/macros/print_control.cfg))
+puts the speed factor, flow factor, velocity limits, pressure advance, Z offset
+and bed mesh back to what `printer.cfg` declares. `PRINT_START`, `PRINT_END`
+and `CANCEL_PRINT` all call it, so a `M220 S150` typed into the web UI or a
+`SET_VELOCITY_LIMIT` left behind by an interrupted `TEST_SPEED` cannot silently
+follow you into the next job.
+
+**Heatsoak by time, not by temperature.** The chamber here is passive — only
+the bed and the bed fans heat it — so `PRINT_START` takes `SOAK=<minutes>`,
+which always terminates. `CHAMBER=<degrees>` still exists and waits on the
+chamber thermistor, but `TEMPERATURE_WAIT` cannot be interrupted: give it a
+temperature this machine cannot reach and the print blocks forever with no way
+out but cancelling. Use `CHAMBER=` only for a target you have actually
+measured; otherwise use `SOAK=`. A typical ABS start line is:
+
+```gcode
+PRINT_START BED=105 EXTRUDER=255 SOAK=15
+```
+
 ## Hardware
 
 | Component | Details |
