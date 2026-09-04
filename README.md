@@ -148,6 +148,32 @@ framebuffer, not a Klipper display, so `hardware/display.cfg` declares only
 `[display_status]` - which is what provides `M117` and `SET_DISPLAY_TEXT`. See
 the comment in that file before removing it.
 
+## Printed mods
+
+None of these change the config, with one exception noted below. They are listed
+because a rebuild has to reprint them, and because the panel and door mods are
+what fix the panel thicknesses.
+
+| Mod | Author | What it is |
+|---|---|---|
+| [THE FILTER, for Voron 2.4](https://www.printables.com/model/334276-the-filter-for-voron-24) | nateb16 (Printables copy by AKinferno) | Activated-carbon filter and the bed fans in one housing, mounted at the front under the bed |
+| [Clicky-Clacky Door](https://github.com/tanaes/whopping_Voron_mods/tree/main/clickyclacky_door) | whopping | One-piece front door on lift-off hinges, magnet latch, closes onto sealing foam |
+| [BTT Pi TFT43 V2.0 Voron 2.4 touch screen case - clicky-clack mod](https://www.printables.com/model/1255057-btt-pi-tft43-v20-voron-24-touch-screen-case-clicky) | Ninefifty | Housing for the PITFT43 under the front 2020 rail, cut to clear the door above |
+| [Voron 2.4 Filament Latch (or any 2020 extrusion)](https://www.printables.com/model/172368-voron-24-filament-latch-or-any-2020-extrusion) | Richard M | The panel clips. **3 mm** panels top and back, **5 mm** on the sides |
+| [Voron Rollback Stands](https://www.printables.com/model/408015-voron-rollback-stands) | Ken226 | Replaces the rear lower corner and midspan clips; the printer tips onto its back to open the electronics bay |
+| [VoronBFI — Beefy Front Idlers](https://github.com/clee/VoronBFI) | clee | Front idlers that turn belt tension into layer compression instead of pulling the printed layers apart |
+| [Voron Disco/Daylight on a Stick LED Mount Tray With Snap-On Diffuser](https://www.printables.com/model/795364-voron-discodaylight-on-a-stick-led-mount-tray-with) | Krhom | Tray and snap-on diffuser on 2020 extrusion for the case LED sticks |
+| [V2.4 handle](https://mods.vorondesign.com/details/xa84lhUN5aMX4nmfZquaQ) | 1-0-R | Carrying handles on the top extrusions, 6 mm clearance so the panel clamp still fits |
+
+**THE FILTER is the exception.** It is the hardware behind `fan_generic bed_fans`
+on `PC8` and behind all of
+[macros/bedfans.cfg](printer_data/config/macros/bedfans.cfg): the same 5015 fans
+that pull chamber air through the charcoal also blow across the underside of the
+bed, which is why bed heating and the fans are tied together in the `M190`,
+`M140`, `SET_HEATER_TEMPERATURE` and `TURN_OFF_HEATERS` overrides. It is also the
+reason the passive chamber warms at all — see *Heatsoak by time, not by
+temperature* above. Drop the mod and that file goes with it, not just the fan.
+
 ## Install order
 
 Everything in the first list comes from [KIAUH](https://github.com/dw-0/kiauh):
@@ -161,7 +187,7 @@ present in `moonraker.conf`):
 3. [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) (`dev` branch) — **required**, creates the `KAMP/` symlink
 4. [klipper-led_effect](https://github.com/julianschill/klipper-led_effect) — without it `leds/effects.cfg` will not load
 5. [Klippain Shake&Tune](https://github.com/Frix-x/klippain-shaketune) — provides the `[shaketune]` section
-6. Cartographer plugin: `cartographer3d-plugin` into `~/klippy-env`
+6. [Cartographer plugin](https://docs.cartographer3d.com/cartographer-probe/installation-and-setup/software-configuration/klipper-setup) — `cartographer3d-plugin` into `~/klippy-env`
 7. [Katapult](https://github.com/Arksine/katapult) — CAN bootloader
 8. [mobileraker_companion](https://github.com/Clon1998/mobileraker_companion)
 9. [klipper-backup](https://github.com/Staubgeborener/klipper-backup) — this backup
