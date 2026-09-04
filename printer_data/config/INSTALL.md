@@ -52,10 +52,10 @@ Sobre Spoolman, que tiene un par de trampas:
 - Su instalador usa `uv`, que **se descarga su propio Python 3.10+**. El 3.9 de
   bullseye no cumple el `requires-python` de Spoolman, pero no hace falta ni
   actualizar Debian ni compilar nada: `uv` lo resuelve solo en aarch64.
-- Los datos de bobinas viven en `~/spoolman/data` (heredado de la instalación
-  anterior en Docker), apuntados con `SPOOLMAN_DIR_DATA` en `~/Spoolman/.env`.
-  Ese `.env` está en `persistent_files` del `update_manager`: si se pierde,
-  Spoolman arranca con una base de datos vacía.
+- Los datos de bobinas viven en `~/.local/share/spoolman` (la ruta por defecto),
+  junto con los backups automáticos nocturnos y los logs. El `.env` solo lleva
+  `SPOOLMAN_HOST` y `SPOOLMAN_PORT`: se dejó a propósito sin `SPOOLMAN_DIR_DATA`
+  para que perder el `.env` no pueda arrancar Spoolman contra una base vacía.
 - El instalador añade `Spoolman` a `~/printer_data/moonraker.asvc` sin salto de
   línea previo, y lo pega a la entrada anterior dejándola inválida. Revisar ese
   archivo después de instalar.
