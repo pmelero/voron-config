@@ -26,7 +26,8 @@ printer.cfg              includes, MCUs, kinematics, idle timeout, SAVE_CONFIG
 │   ├── probe.cfg        Cartographer MCU, the probe, and [bed_mesh]
 │   ├── homing.cfg       safe_z_home and quad_gantry_level
 │   ├── fans.cfg         hotend, part cooling, driver, bay and bed fans
-│   ├── sensors.cfg      chamber and MCU thermistors, filament switches
+│   ├── temperature.cfg  chamber and MCU thermistors
+│   ├── filament_sensors.cfg  the two runout switches and their gcode
 │   ├── display.cfg      [display_status] only — the screen is not Klipper's
 │   └── input_shaper.cfg accelerometer, resonance tester, shaper, Shake&Tune
 ├── leds/
@@ -40,17 +41,18 @@ printer.cfg              includes, MCUs, kinematics, idle timeout, SAVE_CONFIG
 │   ├── clean_nozzle.cfg     _CLEAN_NOZZLE engine + CLEAN_* wrappers
 │   ├── filament.cfg         Spoolman, load/unload, M600, sensor enable
 │   ├── bedfans.cfg          bed fan logic and the M190/M140 overrides
-│   └── test_speed.cfg       TEST_SPEED
+│   ├── test_speed.cfg       TEST_SPEED
+│   └── update_git.cfg       UPDATE_GIT, the manual backup trigger
 ├── KAMP_Settings.cfg    third-party, stays at the root
-├── update_git.cfg       UPDATE_GIT, the manual backup trigger
 └── *.conf               Moonraker, crowsnest, mobileraker
 ```
 
 ## Conventions
 
-- Klipper object names are `lowercase_with_underscores`, macros are `UPPERCASE`,
-  and a leading underscore means internal — Mainsail hides those. Macros carry a
-  `description:`; it is what Mainsail shows on the button.
+- Klipper object names are `lowercase_with_underscores`, macros are
+  `UPPER_WITH_UNDERSCORES`, and a leading underscore means internal — Mainsail
+  hides those. Macros carry a `description:`; it is what Mainsail shows on the
+  button. Indentation is four spaces per level, no tabs.
 - Coordinates more than one macro must agree on live in `_MACHINE_VARS`
   ([macros/variables.cfg](printer_data/config/macros/variables.cfg)), never in
   whichever macro needed them first:
@@ -226,3 +228,11 @@ triggers.
 Avoid running it by hand right after saving a file: filewatch is already running
 its own backup and the two collide on `.git/index.lock`. Harmless — wait a few
 seconds and retry.
+
+**There is deliberately no `.gitattributes`.** The script wipes everything at the
+repo root except `.git`, `README.md` and `.gitmodules`, and only recreates
+`.gitignore` — so a `.gitattributes` committed here would be deleted on the next
+run and the deletion pushed. Everything the printer writes is LF already; a clone
+that edits on Windows should set `core.autocrlf=true` and, if it wants the
+guarantee, put `* text=auto eol=lf` in its own `.git/info/attributes`, which is
+per-clone and never committed.
