@@ -66,6 +66,13 @@ printer.cfg              includes, MCUs, kinematics, idle timeout, SAVE_CONFIG
 - **Bed heating is overridden.** [macros/bedfans.cfg](printer_data/config/macros/bedfans.cfg)
   renames `M190`, `M140`, `SET_HEATER_TEMPERATURE` and `TURN_OFF_HEATERS` so the
   bed fans follow the bed. If bed temperature commands behave oddly, that is why.
+- **The fans outlive the print.** Those same fans are THE FILTER's, so a print
+  that ran above the bed fan threshold (100 C) leaves them running for
+  `filter_minutes` afterwards - 20 min today - to scrub the chamber before it is
+  opened. `PRINT_END` and `CANCEL_PRINT` start it; any later bed fan command
+  cancels it, as does the 30-minute `[idle_timeout]`, which is why
+  `filter_minutes` has to stay below it. Run it by hand with
+  `BED_FANS_FILTER_RUN MINUTES=<n> SPEED=<0-1>`.
 - **Nothing carries between prints.** `_RESET_PRINTER_TO_KLIPPER_CONFIG` puts
   speed factor, flow, velocity limits, pressure advance, Z offset and mesh back
   to what `printer.cfg` declares. `PRINT_START`, `PRINT_END` and `CANCEL_PRINT`
